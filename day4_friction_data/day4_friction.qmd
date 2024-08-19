@@ -1,0 +1,174 @@
+---
+title: "Day 4: working with friction data"
+author: "YOUR NAME HERE"
+date: 2024-08-20
+format: 
+  html:
+    embed-resources: true
+execute:
+  warning: !expr NA
+  message: !expr NA
+editor: source
+---
+
+```{r setup}
+library(tidyverse)
+library(here)
+library(janitor)
+library(readxl)
+```
+
+# Objectives 
+
+By the end of today, you should be able to...
+
+* Access data from an Excel workbook
+* Write "pseudocode" to plan out your analysis approach
+* Translate pseudocode to functional code
+* Write inline R code so you can include numbers directly in your formatted text
+* Analyze relationships between two variables using a linear model
+* Plot the linear relationship using an A/B line on a ggplot
+
+
+# Read in data
+
+Use the `read_excel()` function from the `readxl` package to read in the PTFE pin test data for position 0.  (Use `install.packages('readxl')` to install the package!)
+
+```{r}
+pos0_df <- read_excel(here('PTFE_Pin_TestData/Position Data/12_07_23_Position0.xlsx'))
+```
+
+Some odd text in the output, something about new names?  Click on the data in the environment!  what's up with the column names?  
+
+The file does not have column names right at the top; there's some extra information.  Let's assume we don't need that for now, and just skip those lines!  Check the documentation for `read_excel()` using `?read_excel`.  Note also the punctuation and spaces in the column names - hard to work with!
+
+```{r}
+pos0_df <- read_excel(here('PTFE_Pin_TestData/Position Data/12_07_23_Position0.xlsx'),
+                      skip = 12) %>%
+  clean_names()
+```
+
+# Explore the data
+
+In the console, explore the data: use `summary()`, `head()`, `tail()`.  Write some notes about what you observe.
+
+Try an exploratory plot - if you just pass the whole dataframe into `plot()`, you get a plot of every variable against every other variable, quick way to see if there are any obvious relationships!  Note, `plot()` is not related to `ggplot` - it is good for quick-and-dirty plots, but `ggplot` is better for nice-looking, final-report-ready plots.
+
+```{r}
+plot(pos0_df)
+```
+
+## Some potentially interesting relationships
+
+We can plot one variable against one other easily, using `plot()`:
+```{r}
+plot(position_mm ~ time_s, data = pos0_df)
+```
+
+What does this tell us about the dynamics of the system?
+
+Try plotting a couple of other variable combinations, and write down some notes about what you observe.
+
+```{r}
+plot(velocity_mm_s ~ time_s, data = pos0_df)
+plot(ff_n ~ fn_n, data = pos0_df)
+plot(ff_n ~ time_s, data = pos0_df)
+plot(friction_coefficient ~ ff_n, data = pos0_df)
+```
+
+# Find the coefficient of kinetic friction
+
+Kinetic friction coefficient is the ratio of the friction force to the normal force, while an object is sliding on the surface.  Static friction is when the object is not sliding.  There's already a column for the friction coefficient, but if there weren't, how could we calculate it?
+
+## Pseudocode:
+
+* Find just the observations where the object is sliding, velocity not zero.
+* Divide the friction by the normal force.
+* Take the average.
+
+NOTE: How to deal with positive and negative values?  what if we didn't ?
+
+```{r}
+mu_avg_df <- pos0_df %>%
+  filter(velocity_mm_s != 0) %>%
+  mutate(ff_n = abs(ff_n),
+         mu_k = ff_n / fn_n) %>%
+  summarize(mu_k_avg = mean(mu_k),
+            mu_k_sd = sd(mu_k))
+```
+
+Based on this calculation, the coefficient of kinetic friction is `r mu_avg_df$mu_k_avg`.
+
+# Find the coefficient of kinetic friction a different way
+
+Not sure why, but it looks like the friction coefficient might be different going forward and backward... This time, let's create a statistical linear model to test the relationship.  Let's focus on observations where the velocity is at its positive constant speed of about 50 mm/s.
+
+```{r}
+mu_lm_df <- pos0_df %>%
+  filter(velocity_mm_s >= 45)
+  
+plot(ff_n ~ fn_n, data = mu_lm_df)
+
+mu_model <- lm(ff_n ~ fn_n, data = mu_lm_df)
+
+summary(mu_model)
+```
+
+## Let's explain those stats!
+
+* Intercept: if normal force is zero, how much friction would there be? (this doesn't make much sense in this context)
+* fn_n: for each unit increase in this variable, the outcome variable (ff_n) would increase by this much.  
+    * This is the slope of the line, delta(ff_n) / delta(fn_n), which we can interpret as the coefficient of friction!
+* the p value is very very low; the usual test for statistical significance is a p-value of 0.05 or lower.
+    * Null hypothesis: there is no relationship between the two variables.
+    * Alt hypothesis: there is a relationship.
+    * If the null hypothesis were true, the chance that we'd see a pattern like this (or even more extreme) is incredibly small.
+    * So, we reject the null hypothesis and claim that there is a statistically significant relationship.
+* The R^2 value tells us how much of the observed variation is explained by our model - in this case, nearly 100% of the variation.
+
+## Let's create a nice output plot!
+
+This means going back to ggplot.
+
+We need our slope and intercept information!  We can get the coefficients out of the model using the `coef()` function.  Note that this returns a named vector, and we can access those values by name, or by position (element 1 or 2).
+
+```{r}
+mu_model_coef <- coef(mu_model)
+
+ggplot(data = mu_lm_df, aes(x = fn_n, y = ff_n)) +
+  geom_point() +
+  # geom_abline(intercept = mu_model_coef[1], slope = mu_model_coef[2], color = 'red')
+  geom_abline(intercept = mu_model_coef['(Intercept)'], slope = mu_model_coef['fn_n'], color = 'red')
+```
+
+Based on this linear model, the coefficient of kinetic friction is `r mu_model_coef['fn_n']`.
+
+After creating the plot, how can we make it look more professional or interesting?  Everyone think of three changes we could try to make, then let's figure out how to make those changes!
+
+### some options:
+
+* Map the color to one of the variables
+* Change the axis titles
+* Add a theme
+* Change the color of the grid lines or panel
+* Change the text font and face
+
+```{r}
+ggplot(data = mu_lm_df, aes(x = fn_n, y = ff_n)) +
+  geom_point(aes(color = position_mm), alpha = .7) +
+  # geom_abline(intercept = mu_model_coef[1], slope = mu_model_coef[2], color = 'red')
+  geom_abline(intercept = mu_model_coef['(Intercept)'], slope = mu_model_coef['fn_n'], 
+              color = 'red', linewidth = 2) +
+  scale_color_gradient(low = 'blue', high = 'yellow') +
+  # scale_color_viridis_c() +
+  labs(x = 'Normal force F_n (Newtons)',
+       y = 'Friction force F_f (Newtons)',
+       color = 'Position (mm)') +
+  theme_minimal() +
+  theme(panel.grid = element_line(color = 'cyan'),
+        panel.background = element_rect(fill = '#ffdddd'),
+        # legend.position = 'bottom',
+        legend.position = c(x = 0.1, y = 0.8),
+        text = element_text(family = 'serif'),
+        axis.title = element_text(face = 'bold'))
+```

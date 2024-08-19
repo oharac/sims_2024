@@ -1,0 +1,286 @@
+---
+title: "Day 3 key: Harry Potter aggressions"
+author: "YOUR NAME HERE"
+date: 2024-08-16
+format: 
+  html:
+    embed-resources: true
+execute:
+  warning: !expr NA
+  message: !expr NA
+editor: source
+---
+
+# Objectives 
+
+By the end of today, you should be able to...
+
+- Create a new .Rproj and add files to working directory
+- Attach packages with library()
+- Read in a CSV with readr::read_csv()
+- Explore data with base functions (e.g. View, names, head, tail, etc.)
+- Do some basic wrangling with dplyr (select, filter, mutate, group_by, summarize)
+- Use the pipe operator
+- Create basic graphs in ggplot2
+
+**Setup** Make a directory (folder) on your computer that you'll put all of your R for Researchers stuff in. Maybe Documents > SIMS > R for Researchers.
+
+In RStudio:
+
+- Create a new R project (blue cube) - save in the R for Researchers folder you created above
+- Download the hp_aggression.csv file from CANVAS
+- Copy and paste the scripts and hp_aggression.csv file into the project folder, put the csv in a subfolder called 'data'
+
+# Part 1: Hello, RStudio 
+
+# Part 2: Hello, RMarkdown 
+
+1. Create a new RMarkdown document. You can save this directly in your R for Researchers folder. 
+
+Some basics of RMarkdown: 
+
+- Bulleted lists
+- With a dash then a space to start the line
+- Make sure to have a blank line before it.
+  - You can have nested lists
+ 
+1. Numbered lists
+2. Also work
+
+Create different header levels:
+
+# Largest (single pound sign)
+### Get smaller as you add more pound signs
+##### Even smaller with more pound signs...
+
+*Italics* with a single asterisk on each end
+**Bold** with a double asterisk on each end
+
+Or, check out the visual editor!!!
+
+Knitting: create an html from your .Rmd.
+
+**Quick Coding Tips:** 
+
+- Start a new code chunk: ctrl + alt + I (command + option + I on mac) 
+- `<-` takes the result of whatever is on the right hand side, and assigns it to the name on the right hand side.
+- `%>%` means "and then" to R: it tells R to continue and run the code as one 
+- \# in a code chunk means it is annotation, not code (and will not run as code)
+
+# Part 3: Hello, data 
+
+## Install and Attach Packages 
+
+We attach packages with `library(package_name)`
+You can only attach packages that are installed. In the console, let's install some packages together. 
+
+`install.packages('tidyverse')`
+`install.packages('janitor')`
+
+```{r}
+### This is an active code chunk. Anything in here R knows is code, and will try to run as code. Since I am using the # symbol at the beginning of this sentence, this is called an "annotation", and R won't try to run this as code. 
+
+### Attach packages here:
+
+```
+
+
+## Read in Harry Potter Aggression data
+
+- Data: Harry Potter aggression by character, book & number of mentions!
+- Collected and made available by Andrew Heiss (https://www.andrewheiss.com/, https://github.com/andrewheiss/Harry-Potter-aggression)
+
+In a new code chunk, use `read_csv()` to read in the hp_aggression.csv data as a new stored object called 'hp_aggression'
+
+- Start a new code chunk: ctrl + alt + I (command + option + I on mac) 
+
+We use the packages `here()` to point to different files *within our project*. (**note:** your file path may differ from this! Make sure you use the right path within YOUR project)
+
+> CREATE CODE CHUNK HERE!
+
+
+# Data Exploration 
+
+Let's take a look at the data we just read in. We'll do this in the Console, because we don't care about having a history of this initial exploration.
+
+How to view your data frame in "spreadsheet" format?
+You can click on the df name in the 'Environment' tab to run the View() function (see Console after clicking on the name - notice that this actually runs View). 
+
+- `view()`: View data file
+- `head()`: Return the first 6 lines
+- `tail()`: Return the last 6 lines
+- `names()`: Return the column headers
+- `summary()`: Basic summary of columns
+
+
+## Clean up column names with janitor::clean_names()
+
+The column names are not particularly coder-friendly (all caps - annoying to work with, inconsistent). There are a number of ways to update column headers, but `janitor::clean_names()` is a really great one that will update them all to lower_snake_case all at once!
+
+We will also use the pipe operator (`%>%`), which is imported when we attach the tidyverse, for the first time. We can think of the pipe as a way to say "and then..." between sequential bits of code. It allows us to perform sequences of steps in a logical way, instead of using a bunch of nested functions!
+
+- Tip: use keyboard shortcut `ctrl + shift + M` to generate ` %>% ` (command + shift + M on macs)
+
+The code below creates a new object, hp_clean, that starts from hp_data *and then* applies janitor::clean_names()!
+
+> CREATE CODE CHUNK HERE!
+
+Run the code, then look at the outcome `hp_clean` to ensure that the column headers are updated.
+
+## Basic Wrangling
+
+We've already done a lot in this session: created a project, dropped data into the project folder, read in data, cleaned column names, and met the pipe operator (%>%). Now, let's add a few more tools to our wrangling toolkit:
+
+- dplyr::select() - choose / exclude columns
+- dplyr::filter() - create subsets based on conditions
+
+### Wrangle Columns 
+
+Use `dplyr::select()` to select (or exclude) columns.
+
+Example 1: select only the columns 'character' and 'book'
+
+```{r}
+### Use `select()` to select only columns 'character' and 'book' 
+hp_ex_1 <- hp_clean %>% 
+  select(character, book) 
+```
+
+Example 2: Select columns 'abb' through 'aggressions'
+
+> CREATE CODE CHUNK HERE!
+
+Example 3: select columns 'character' through 'aggressions', excluding 'book':
+
+> CREATE CODE CHUNK HERE!
+
+Example 4: Select book, character, and aggressions, in that order:
+
+> CREATE CODE CHUNK HERE!
+
+
+### Wrangle Rows 
+
+We can use the `dplyr::filter()` function to subset our data by rows. 
+
+Use filter to set conditions that will decide which rows are kept/excluded in a new subset. 
+
+Example 5: only keep observations from the book "The Goblet of Fire"
+
+```{r}
+hp_ex_5 <- hp_clean %>%
+  filter(book == "The Goblet of Fire")
+```
+
+Some notes to keep in mind: 
+
+- Case sensitive when trying to match words! 
+- Note the double = (==) when looking for word matching
+
+Example 6: keep rows where the character abbreviation (abb) matches 'harr', 'herm', 'vold', OR 'ronw.' One way: use the vertical lin e '|' to indicate 'OR' within a filter statement:
+
+> CREATE CODE CHUNK HERE!
+
+Example 7: Or, a less tedious way: look for matches within a string series:
+
+> CREATE CODE CHUNK HERE!
+
+- Tip: See ?"%in%" to see more details. It's basically a special operator for finding matches (binary - match? yes or no...if yes, keep it)
+
+Example 8: Only keep rows where the book is "The Deathly Hallows" AND aggressions is greater than 5:
+
+> CREATE CODE CHUNK HERE!
+
+- Tip: Other operators also work: >=, <=, >, <, or if a value, use a double ==. Note: for 'AND' statements, you can either just use a comma, or use an ampersand (&), or do them as separate filtering steps
+
+### Wrangle NEW Columns 
+
+Use `dplyr::mutate()` to add variables to a data frame, while keeping existing (unless you explicitly overwrite)
+
+Example 9: Let's add a column that contains an 'aggression per mention' ratio (call new column 'apm').
+
+> CREATE CODE CHUNK HERE!
+
+### Combine Wrangling! 
+
+Use `dplyr::group_by()` to create 'groupings' by variable, then `dplyr::summarize()` to calculate a single value for each group & report a table
+
+Example 10: we want to group by character abbreviation, then find the total number of aggressions for all characters across all books.
+
+```{r}
+hp_ex_10 <- hp_clean %>%
+  group_by(abb) %>%
+  summarize(tot_agg = sum(aggressions))
+```
+
+- Tip: Other summary statistics: mean, median, sd, var, max, min, etc.
+
+Example 11: We want to only keep rows that contain observations for Harry Potter (Harry), Voldemort, Hermione Granger, and Severus Snape. We also only want to keep the columns for character, book, and mentions. Then, create groups by character abbreviation and find the total number of mentions.
+
+> CREATE CODE CHUNK HERE!
+
+
+# Visualizations with ggplot2
+
+A ggplot2 graph requires 3 things: 
+
+1. That you're using ggplot
+2. What data to plot, including what's x and y as relevant 
+3. What type of graph (geom) to create
+
+## Graph 1: Bar plot of most mentions using our data from Example 11
+
+Use `geom_col()` to display a column/bar chart, if you've already tallied up the counts.  Use `geom_bar()` if you haven't already tallied up the counts.  In example 11, we used `group_by() %>% summarize()` to tally up the total mentions so we will use `geom_col` here.
+
+```{r}
+ggplot(data = hp_ex_11, aes(x = character, y = total)) +
+  geom_col() +
+  labs(x = "Character",
+       y = "Total mentions",
+       title = "My Title!")
+```
+
+* What does each column represent?
+* what happens if you swap x and y in the `aes()`?
+* How could we do a similar plot with `geom_bar`?
+
+## Graph 2: Let's make a scatterplot plot of aggressions v. mentions (across all characters, books, etc.)
+
+Use `geom_point()` for scatter plots.
+
+> CREATE CODE CHUNK HERE!
+
+* What does each point represent?
+* What if we took out the `color = 'purple'`, and in the `aes()`, added `color = book`? `color = character`?
+
+## Graph 3: Let's make a histogram of all aggression counts to see how they're distributed
+
+> CREATE CODE CHUNK HERE!
+
+* What does each column represent?
+ 
+## Graph 4: Now, a jitterplot of the number of aggressions by book:
+
+> CREATE CODE CHUNK HERE!
+
+* What does each point represent?
+* Why is it split up by book?
+* what does the `coord_flip()` do?
+
+# Wrap-up
+
+Congratulations! You have:
+
+- Made an R Project (self-contained working directory)
+- Added data and scripts
+- Read in the data
+- Did some basic exploring
+- Some data wrangling basics (select, filter, mutate, group_by + summarize)
+- Learned a few base operations (mean, sd, max, min, n, na.rm = TRUE)
+- Used the pipe operator for sequences of steps
+- Made a ggplot2 graph!
+
+Save / render, close your project, and reopen (by double clicking the .Rproj file), and ensure that you can re-run everything.
+
+YAY reproducibility!
+

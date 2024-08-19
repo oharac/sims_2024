@@ -1,0 +1,155 @@
+---
+title: 'Visualization Challenge'
+date: 2024-08-20
+format: 
+  html:
+    embed-resources: true
+  # docx
+execute:
+  warning: !expr NA
+  message: !expr NA
+editor: source
+---
+
+Now it's time to try a little visualization challenge!
+
+<div>
+<div style="float: left; position: relative; top: 0px; padding: 30px;">
+![](294-basic-ridgeline-plot3.png){width=240}
+</div>
+
+Look back to the figures we have made. Out of the visualizations we coded, which one do you think displays the data best? The most interesting? The sky is the limit here! You do not have to use a visualization we made, either. If you want to try something else, check out this resource: The [R Graph Gallery](https://www.r-graph-gallery.com/). It has code to help you make all sorts of cool visualizations in R.
+
+Ultimately, choose one type of graph that you want to make. Choose the data you would like to display, by considering a question you'd like to answer from the data.
+
+How do I choose my data? Take a look at the plots we made together in class. Think about what was the most interesting to you. With the Harry Potter data, we looked at aggressions vs. mentions, aggressions per book, and total mentions by top characters.  With the friction data, we plotted friction force vs. normal force, position vs. time, and a few other plots.  You could also experiment plotting different combinations, or even use a different data set if you're feeling bold!
+
+***Note:*** The point of this assignment is not to answer some important question or do some complex data wrangling.  The point of this assignment is to explore options for plotting beautiful and interesting data visualizations in R.
+
+</div>
+
+# Instructions
+
+1. Create a Quarto document in which you will write code to create a beautiful data visualization.
+    * Option 1: Make a copy of the day_3 Quarto notebook, where we loaded the Harry Potter data and did some data wrangling and plotting.
+    * Option 2: Create a new Quarto notebook from scratch, and write code chunks to load the Harry Potter data (or other data if you prefer).  If you do this, make sure to have `embed-resources:` true in your Quarto header:
+```
+      format: 
+        html:
+          embed-resources: true
+```
+2. You may keep all the existing code chunks in place, and skip to the end of the document where you will create your data visualization.  Optionally, you may delete any text and code chunk in the existing document that is not relevant to your data visualization (always a good idea to keep your analysis tightly focused!).
+3. Come up with a question you can answer using a data visualization and the data you have on hand.  At the end of the document, write your question, and format it in bold, or perhaps as a heading (using # signs).
+4. Based on this question, write a description of the data visualization you plan to make.  Consider: 
+    * What is the independent variable (x axis)?  What is the dependent variable (y axis)?  
+    * Are there any other interesting variables you can include as color or other aesthetics?  
+    * What type of plot can you use (or possibly multiple types you can try) to help the viewer understand the question?
+5. If your question requires some data wrangling (e.g., mutating new columns or group_by/summarizing existing columns), write the steps you will need to do that.
+6. Finally, create a code chunk to create your plot (and wrangle data if necessary).
+7. Once you have decided on your graph and plotted it with code, let's make it publication ready! Check out the advice below to format your visualization.
+8. Write a few thoughts about your final plot - what you particularly like, what you wish you could change (even if you’re not sure how to change it), etc.
+9. Save your final plot as a .png file (or .jpg or .gif, your choice).
+10. Render your Quarto document to a HTML file.
+
+You will submit your saved figure and the rendered HTML file to Canvas.
+
+## Your final figure should include: 
+
+- Title 
+- Human readable x and y-axis labels 
+- Different colors than the default in ggplot 
+- Legend with human-readable title
+
+When you are done, save as a .png, .jpg, or .gif (see code below) 
+
+# Tips to format your data visualization
+
+## Title, subtitle, and axes labels 
+
+**NOTE** All of the code below in code chunks is commented out (on purpose, with a # in front). Remember that in order for R to recognize code, you must remove the # within the code chunk. Do this when you're ready to write your own code! 
+
+```{r}
+# Add a title, a subtitle, and x and y-axis labels 
+
+# ggplot(data = <your data here>, aes(<your variables here>)) +
+#   geom_something() +
+#   labs(title = "your title here",
+#        subtitle = "your subtitle here",
+#        x = "what is this variable",
+#        y = "what is that variable")
+
+# Center the title and subtitle 
+
+# theme(plot.title = element_text(hjust = 0.5), 
+#       plot.subtitle = element_text(hjust = 0.5))
+
+# alternately, hjust = 0 is left justified, and hjust = 1 is right justified
+
+```
+
+## General themes 
+
+Explore different themes that change the general appearance of your visualization.
+
+* `theme_light()`
+* `theme_gray()`
+* `theme_bw()`
+* `theme_minimal()`
+* `theme_dark()`
+* `theme_classic()`
+* `theme_void()`
+
+...And many more! Check out [this resource](https://ggplot2.tidyverse.org/reference/ggtheme.html) for more details.
+
+And if you really want to get into the weeds, you can hand-modify pretty much any part of the plot.  See [this reference](https://ggplot2.tidyverse.org/reference/theme.html) for more details.
+
+## Explore different color palettes 
+
+[Check out this page](https://www.r-graph-gallery.com/ggplot2-color.html) to see how the colors change with different color palettes (scroll to "Changing the Color Scale with ggplot2")
+
+Some color palettes are included with ggplot, like: 
+
+* hue
+* manual 
+* grey
+
+Palettes from [R Color Brewer](https://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3) are also included: 
+
+* BuPu
+* RdYlBu
+* Paired
+* PuOr
+* Spectral 
+* Pastel1
+
+Some you will need to install a new package to explore, like 'viridis' and 'paletteer' (`install.packages("viridis")`)
+
+* Magma 
+* Inferno 
+* Plasma 
+* viridis
+* Cividis
+* Nord
+* Awtools 
+* Dutchmasters
+* ggsci
+* ggthemes
+
+## Legend: 
+
+Check out [this great resource](http://www.sthda.com/english/wiki/ggplot2-legend-easy-steps-to-change-the-position-and-the-appearance-of-a-graph-legend-in-r-software) for lots of details how to change your legend.
+
+
+
+# How to save as a .png file
+
+Use `ggsave()` to save the most recent plot as a file.  Save your final figure as 'lastname_final_fig.png' (example: `ohara_final_fig.png`).  `.png` is "portable network graphics", a great file format for images on the web.  Other common ones are `.jpg` and `.gif`.  The different file types have advantages and disadvantages, but it shouldn't make much difference here.
+
+You can specify the width and height for a certain look, or leave those alone and let it auto generate.
+
+```{r}
+# ggsave("ohara_final_fig.png", width = 7.29, height = 4.5, units = "in")
+
+# ggsave("ohara_final_fig.png")
+```
+

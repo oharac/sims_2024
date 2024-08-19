@@ -1,0 +1,91 @@
+---
+title: "Walkthrough script: R for Research day 2"
+author: "Casey O'Hara"
+format: 
+  html:
+    code-fold: true
+    toc: true
+    embed-resources: true
+execute: 
+  echo: true
+  message: false
+  warning: false
+editor: visual
+---
+
+```{r setup}
+library(tidyverse)
+```
+
+# Load the data
+
+```{r load data}
+sfo_trees_df <- read_csv('sfo_trees_sample.csv')
+```
+
+About the data: SF trees data are from the [SF Open Data Portal](https://data.sfgov.org/City-Infrastructure/Street-Tree-List/tkzw-k3nq). See more information from Thomas Mock and TidyTuesday [here](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-01-28). Data updated 1/10/2024, with certain columns dropped to reduce file size. Additionally, a 10% sample of the full dataset was kept to further reduce file size.
+
+Each row is an observation, in this case, a single tree. Each column is a variable, in this case, information about each of the trees.
+
+# Example 1:
+
+What are the most common legal statuses of trees in San Francisco?
+
+## Pseudocode
+
+-   For each legal status code, count up how many observations (trees) are under that code.
+-   Find the legal codes with the 5 highest totals, and keep those (drop all the others).
+-   Store the results as `top_5_status`.
+
+```{r}
+sfo_trees_df %>%
+  group_by(LegalStatus) %>%
+  summarize(tree_count = n())
+
+top_5_status <- sfo_trees_df %>%
+  group_by(LegalStatus) %>%
+  summarize(tree_count = n()) %>%
+  ungroup() %>%
+  slice_max(tree_count, n = 5)
+```
+
+Make a ggplot of the top 5 observations from above:
+
+```{r}
+ggplot(top_5_status, 
+       aes(y = fct_reorder(LegalStatus, tree_count), 
+           x = tree_count)) +
+  geom_col(fill = 'blue') +
+  labs(y = 'Legal status', x = 'tree count') +
+  theme_minimal()
+```
+
+# Example 2
+
+Where are all the oak and pine trees in San Francisco?
+
+## Pseudocode
+
+-   Find observations that are either pine or oak trees (of various types); drop the rest.
+-   Select just the columns: "Species", "LegalStatus", "PlantDate", and "Latitude" and "Longitude"
+-   For each tree, note whether it's an oak or a pine!
+
+## Functional code
+
+```{r}
+oak_pine_df <- sfo_trees_df %>%
+  filter(str_detect(Species, "Oak") | str_detect(Species, 'Pine')) %>%
+  select(Species, LegalStatus, PlantDate, Latitude, Longitude) %>%
+  mutate(type = ifelse(str_detect(Species, 'Oak'), 'oak', 'pine'))
+```
+
+## Visualize
+
+```{r}
+ggplot(data = oak_pine_df, aes(x = Longitude, y = Latitude, color = type)) +
+  geom_point() +
+  theme_minimal() +
+  theme(axis.title = element_blank()) +
+  labs(color = 'Tree type',
+       caption = 'Location of oaks and pines in San Francisco')
+```
