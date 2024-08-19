@@ -1,0 +1,202 @@
+---
+title: "Day 4 Key: Advanced Data Wrangling and Visualization"
+author: "YOUR NAME HERE"
+date: 2024-08-20
+format: 
+  html:
+    embed-resources: true
+execute:
+  warning: !expr NA ### this suppresses warnings when rendering, but not in interactive mode
+  message: !expr NA ### this suppresses messages when rendering, but not in interactive mode
+editor: source
+---
+
+# Day 4 Materials
+
+**Packages needed:**
+
+- tidyverse (you should already have this) 
+- janitor (you should already have this)
+- ggbeeswarm
+
+**Goals:**
+
+- Markdown continued
+- Basic data exploration graphs (hist, qqnorm)
+- Data wrangling continued + group_by
+- Graphs with error bars
+- Explicitly ordering categorical variables
+- ggplot finalization 
+
+
+First: Create a new project, and put the files from Canvas into the project directory.
+Second: create a data folder, and move the `lter_lobster.csv` data into the data folder.
+Third: Change your name up top, and as we go through the lesson, you insert your own code chunks and code!
+
+# Load packages
+
+```{r}
+library(tidyverse)  ### for data wrangling and plotting
+library(here)       ### for easy file path management
+library(janitor)    ### for cleaning ugly column names
+library(ggbeeswarm) ### for a new ggplot geometry
+```
+
+# Data Description
+
+Our data today are from the [Santa Barbara Coastal Long Term Ecological Research (SBC LTER)](https://sbclter.msi.ucsb.edu/) . This is a very cool long term research effort that is a collaboration of UCSB's Marine Science Institute and the National Science Foundation's (NSF) Long Term Ecological Research Network. 
+
+The SBC LTER has been going since 2000, and they study all kinds of things! One of their datasets is on spiny lobsters. 
+
+This is the reference for the dataset: 
+
+Reed, D, R. Miller. 2022. SBC LTER: Reef: Abundance, size and fishing effort for California Spiny Lobster (Panulirus interruptus), ongoing since 2012 ver 8. Environmental Data Initiative. https://doi.org/10.6073/pasta/25aa371650a671bafad64dd25a39ee18. Accessed 2023-08-24.
+
+We will be using a *subset* of the dataset today (not all of it). 
+
+And you can link to site with the dataset [here](https://sbclter.msi.ucsb.edu/data/catalog/package/?package=knb-lter-sbc.77). 
+
+These data are information about California spiny lobsters (Panulirus interruptus). 
+
+![](spiny_lobster.jpg)
+
+**Figure 1.** California spiny lobster (Panulirus interruptus). Photo credit: [Catalina Island Marine Institute](https://cimioutdoored.org/ca-spiny-lobster/)*
+
+There are five study sites: 
+
+- Naples
+- Isla Vista
+- Arroyo Quemado 
+- Mohawk 
+- Carpinteria 
+
+![](map_study_area.png) 
+**Figure 2.** Study site of the California spiny lobster. Five locations are represented: Arroyo Quemado, Naples, Isla Vista, Mohawk, and Carpinteria (from left to right). Naples and Isla Vista are within Marine Protected Areas (MPAs) while Arroyo Quemado, Mohawk, and Carpinteria are not. Credit: [Santa Barbara Coastal LTER](https://portal.lternet.edu/nis/mapbrowse?packageid=knb-lter-sbc.77.3)*
+
+# Load data
+
+Remember to drop the file into the data folder inside the project directory. This is so R will know right where to look! 
+
+* Use `read_csv()` to read in our data 
+* Use `clean_names()` to tidy our data columns to lower snake case 
+
+> CODE CHUNK HERE
+
+Explore (in the console) with `summary()`, `head()`, `View()`, etc.
+
+# Exploratory Analysis
+
+It's always important to look at our data. Let's say we want to look at the distribution of lobster sizes at all five sites (ignoring that there are different years, transects, etc).
+
+Let's group the data and do some visualization using ggplot for exploratory data analysis. 
+
+## Histograms
+
+Histograms are always a great idea. They show us the general structure (distribution) of our data. `facet_wrap` makes mini plots (facets), one for each value of a categorical variable.
+
+> CODE CHUNK HERE
+
+
+## QQ plots
+
+QQ plots are ideal for assessing normality (bell curve shape of distribution, important statistical concept). The closer the relationship to linear, the closer the data are to normally distributed. 
+
+> CODE CHUNK HERE
+
+
+## Boxplots
+
+Boxplots show important characteristics like max, min, 25th and 75th quantiles, and median. Good for evaluating outliers, etc.
+
+> CODE CHUNK HERE
+
+
+## Jitterplots
+
+Jitterplots are TOTALLY unbiased because they show EVERYTHING - they just shuffle it a little so the points don't all overlap.  Note also "alpha" for transparency (alpha = 1 is solid, alpha = 0 is invisible).
+
+> CODE CHUNK HERE
+
+
+## Bee swarm plot
+
+Even better though...ggbeeswarm?
+
+> CODE CHUNK HERE
+
+
+## Multiple plot types at once!
+
+And can combine these:
+
+> CODE CHUNK HERE
+
+
+
+# Analysis
+
+Now, let's say that we want to find the mean lobster size for each SITE at each different YEAR (ignoring different transects, etc.)
+
+## Find mean and SD lobster size per site and year
+
+For each different SITE at each different YEAR, we will find the mean and standard deviation of lobster size.  Which function(s) will be useful?
+
+> CODE CHUNK HERE
+
+
+## Plot a bar graph with error bars for mean size & location
+
+We will use ggplot to create a bar chart, with error bars to show the variation around the mean.  But also make sure to read why dynamite plots hide way too much about the data, and should be used with caution: [Dynamite plots must die](https://simplystatistics.org/posts/2019-02-21-dynamite-plots-must-die/)
+
+> CODE CHUNK HERE
+
+
+## Focus on 2012
+
+Let's say I'm only interested in 2012 data, and I want these to show up from LOW to HIGH on my chart.  Then I'm going to only keep data from my previous data frame where YEAR == 2012, and arrange from low to high mean size. 
+
+> CODE CHUNK HERE
+
+
+Note, the `site` column is `chr`, meaning `character`, aka letters and text.
+
+And now plot:
+
+> CODE CHUNK HERE
+
+
+It automatically arranges **alphabetically** by site, even though our data frame is now arranged from low to high mean values.  But we want to create an ORDERED column graph. 
+
+Factors let us force a specific order: `fct_reorder()` to reorder a categorical column based on the values in a different column.
+
+> CODE CHUNK HERE
+
+
+Note now the site is `fct`, or `factor`, reordered based on the mean size.
+
+Now plot, note the bars are now in order from smallest to tallest!  Then we can copy our nice colors and formatting from our earlier plot, and save it.
+
+> CODE CHUNK HERE
+
+
+What other changes might we want to make?
+
+### Summary and What's Next 
+
+**Summary** 
+
+Today we: 
+
+- Continued to use Markdown! 
+- More data exploration graphs (hist, qqnorm)
+- Data wrangling continued + group_by
+- Made graphs with error bars
+- Ordered categorical variables
+- More ggplot!! 
+
+**What's Next?** 
+
+- Submit your day 3 (Harry Potter aggressions) and day 4 (lobsters) HTML files on Canvas (by tonight at midnight)
+- Data Visualization Challenge assignment. DUE Sunday, 25th at midnight!
+- Final Assignment: Report in Quarto
+    - More info coming next week! 
