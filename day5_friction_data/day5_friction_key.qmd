@@ -116,14 +116,14 @@ summary(mu_model)
 
 ## Let's explain those stats!
 
-* Intercept: if normal force is zero, how much friction would there be? (this doesn't make much sense in this context)
-* fn_n: for each unit increase in this variable, the outcome variable (ff_n) would increase by this much.  
+* Intercept: if normal force is zero, how much friction would there be? (this doesn't make much sense in this context - important to remember that a linear model might not work well, far outside the range of our data)
+* fn_n: for each unit increase in this variable (normal force), the outcome variable (ff_n, friction force) would increase by this much.  
     * This is the slope of the line, delta(ff_n) / delta(fn_n), which we can interpret as the coefficient of friction!
 * the p value is very very low; the usual test for statistical significance is a p-value of 0.05 or lower.
     * Null hypothesis: there is no relationship between the two variables.
     * Alt hypothesis: there is a relationship.
-    * If the null hypothesis were true, the chance that we'd see a pattern like this (or even more extreme) is incredibly small.
-    * So, we reject the null hypothesis and claim that there is a statistically significant relationship.
+    * p-value: If the null hypothesis were actually true (and there were no relationship), this is the chance that we'd see a pattern like this from a random sample - very very unlikely!
+    * So, we reject the null hypothesis and claim that there is a statistically significant relationship, with p < 0.05 (or p < 0.001 even).
 * The R^2 value tells us how much of the observed variation is explained by our model - in this case, nearly 100% of the variation.
 
 ## Let's create a nice output plot!

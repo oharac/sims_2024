@@ -1,0 +1,73 @@
+---
+title: "Assignment 3 data check"
+author: "O'Hara"
+date: 2024-08-16
+format: 
+  html:
+    embed-resources: true
+execute:
+  warning: !expr NA
+  message: !expr NA
+editor: source
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(here)
+```
+
+```{r}
+usda <- read_csv(here('usda_nutrients.csv')) %>% janitor::clean_names()
+```
+
+Start a new R Project and put the usda_nutrients.csv dataset into that project folder (best practice is to create a data folder and put it in there!).  In the R project folder, create a new Quarto document and fill out the header section.  Where it says, `format: html`, replace that with this code (including the spacing):
+
+```
+format: 
+  html:
+    embed-resources: true
+execute:
+  warning: false
+  message: false
+```
+
+The `embed-resources: true` line in the header "embeds" the plot figures directly into the HTML, instead of as files in a separate folder.  If you *don't* do this, and turn in your HTML, your beautiful figures won't show up!  The `execute:` options make sure that warnings and messages are not included in your final output. (see what happens if you make them `true` and render your document!)
+
+We will be using the `usda_nutrients.csv` dataset from Canvas.  This dataset includes food nutrient information for various food groups from USDA (National Nutrient Database, now FoodData Central).  https://fdc.nal.usda.gov/index.html.  Accessed January 25, 2023.  Here is a citation you can use:
+
+> U.S. Department of Agriculture, Agricultural Research Service. FoodData Central, 2019. https://fdc.nal.usda.gov.  Accessed January 25, 2023.
+
+Come up with an interesting question that compares three different food groups according to the amount of certain nutrients in each group. For example, how do beef, chicken, and seafood products compare with respect to the amount of protein and fat?  How do grains, vegetables, and fruits compare with respect to the amount of vitamin A and iron?
+
+* Read in the `usda_nutrients.csv` dataset.
+* Choose three different food groups.  To see all the food group options, use this code in the console (this assumes you called your dataset `usda` and used the `clean_names()` function on it!): `unique(usda$food_group)`.
+* Choose the columns for food group, description, and two nutrients of your choice (not the USRDA columns - those are the total recommended daily amount for those nutrients, not the amount of the nutrient in the foods).
+* Make a plot, or multiple plots if necessary, that show how your chosen food groups compare with respect to your chosen nutrients.
+
+```{r}
+usda_clean <- usda %>% filter(food_group %in% c('Beef Products', 'Finfish and Shellfish Products', 'Poultry Products'))
+ggplot(usda_clean, aes(x = protein_g, y = fat_g, color = food_group)) +
+  geom_point()
+```
+
+
+Your report should include:
+
+* A descriptive title, your name, and the date
+* An overview section describing your question and analysis
+    * which food groups, which nutrients, and why?
+    * perhaps describe why these nutrients are important (do a little research!)
+    * Consider finding a related picture on the web and including that in your document! (optional!)
+* A brief description of the data set and a citation (see above)
+* A methods section that includes text descriptions of your data wrangling process (nicely formatted text) and code chunks that perform the data wrangling.
+* A professional-looking plot (or multiple plots, if necessary) comparing amounts of your chosen nutrients and your chosen food groups.
+* A results section that describes the patterns you found, based on your plots.  This would also be a good place to include summary statistics, such as the mean and standard deviation, of the nutrient variables for each food group.
+* A discussion/conclusion section that describes potential implications of those patterns you found - in other words, why should anyone care about those patterns?
+
+Notes:
+
+* Your report should show all your code (since this is a coding class!) though more often, you would hide it and just show the results.
+* After you render your document, make sure to **look at it!!!** and make sure it all looks good!  Adjust your header levels, text, code etc if things aren't showing up nicely!
+
+When you've completed your report, render it to HTML and turn that in on Canvas.
