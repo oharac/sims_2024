@@ -1,0 +1,95 @@
+---
+title: "SIMS day 6"
+author: "Casey O'Hara"
+format: 
+  html:
+    embed-resources: true
+    toc: true
+    number-sections: true
+editor: visual
+---
+
+# Set up a new Quarto document
+
+* Create a new blank Quarto document.  Save it in the day6 folder as `day6_joins_<your name>.qmd`.
+* In the header of the Quarto document, add your title and author name.
+* Set up the `format` field: 
+    * put `html` on a new line and space in twice, and add a colon after.
+    * on another new line, under `html:` and spaced in twice more, add `embed-resources: true`.
+    * Optionally, on additional lines with the same indent, add a table of contents `toc: true`, and maybe `number-sections: true`.
+* Add an `execute` field to suppress warnings and messages from showing up in your final R Markdown.
+    * All the way to the left, on a new line, write `execute:`
+    * On a line below that, spaced in twice, add `message: false`, and then another line, and `warning: false`.
+* All done with this!
+
+# Load packages
+
+Install the `nycflights13` package: `install.packages('nycflights13')`
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+### note, we're not loading any data from files, so we don't need to load the here and janitor packages...
+```
+
+# Examine the data
+
+Here we are loading data from the `nycflights13` package instead of from a csv or excel file.  There are many packages with data sets built in, for demonstration purposes or to provide data for people to use.  We can see these datasets by typing (in the console so it doesn't fill up our document when we render it!) `data()` or for a specific package, `data(package = 'nycflights13')`.  Then to load it (inside a code chunk), we can type `data(flights)`.
+
+```{r}
+data(flights)
+data(airports)
+data(airlines)
+data(planes)
+```
+
+These datasets represent all the flights into and out of NYC airports in 2013.  Let's look at a few things:
+
+```{r}
+table(flights$origin)  ### how many planes from each NYC airport (by code)
+table(flights$carrier) ### how many planes from each airline (by code)
+```
+
+Everything is by code!  but that's hard to read.  Look at the other datasets - start with `airports` to figure out what EWR, JFK, and LGA stand for.  Then look at `airlines` to figure out the two-letter codes.
+
+# Analysis
+
+Let's look for all flights leaving from NYC airports and heading to San Diego in 2013, and count how many are coming from each airline.  How would we go about doing that?  Look at the columns in the different datasets, and think about the functions we've been using so far.  Write down the steps you think we need.
+
+## Pseudocode
+
+
+## Functional code
+
+If we look up the FAA codes for Sacramento airport(s), we could just filter based on that.  But we can also attach our separate datasets easily.  Here we'll use join functions to get all our data in one place!  Identify the 'key' columns we can use to attach one dataset to the other.
+
+Different joins: `full_join()` keeps all rows of both datasets. `left_join()` keeps all rows in the first dataset, and only those rows in the second that match the first (if no match, that row is dropped).  Also `right_join()` and `inner_join()`.
+
+```{r}
+all_flights <- flights %>%
+  select(origin, dest, carrier, flight) %>%
+  full_join(airlines, by = 'carrier') %>% ### key matches in both sets
+  ### but `name` is generic, and shows up in the other datasets too - so rename it
+  rename(airline = name) %>%
+  left_join(airports, by = c('dest' = 'faa')) %>% ### key columns are named differently
+  ### and again, `name` - let's rename this one too
+  rename(dest_name = name)
+```
+
+Look at the results!  all those columns from `airports` are now attached to our 
+Now use `filter` to find flights to Sacramento.
+
+```{r}
+sd_flights <- all_flights %>%
+  filter(str_detect(dest_name, 'San Diego')) %>%
+  group_by(airline) %>%
+  summarize(n_flights = n())
+```
+
+## Why would you need this?
+
+A couple of reasons:
+
+* Data comes from two different sources
+* Including all the airport names and info with every flight (and especially if we start attaching plane-related data) duplicates a lot of info, and would make it a huge and unwieldy dataset, so splitting out some of that into smaller data frames is helpful.
+    * Many big databases apply this logic to avoid duplicating information unnecessarily
